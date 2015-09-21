@@ -1,0 +1,14 @@
+[16-Sep-2015 19:30:21 CST6CDT] PHP Parse error:  syntax error, unexpected '$q' (T_VARIABLE) in /home/structur/public_html/projects/dbfun/dbfun.php on line 9
+[16-Sep-2015 19:35:28 CST6CDT] PHP Parse error:  syntax error, unexpected '$title' (T_VARIABLE) in /home/structur/public_html/projects/dbfun/database.php on line 10
+[16-Sep-2015 19:54:03 CST6CDT] PHP Parse error:  syntax error, unexpected 'todo' (T_STRING) in /home/structur/public_html/projects/dbfun/dbfun.php on line 11
+[16-Sep-2015 19:54:05 CST6CDT] PHP Parse error:  syntax error, unexpected 'todo' (T_STRING) in /home/structur/public_html/projects/dbfun/dbfun.php on line 11
+[16-Sep-2015 19:54:37 CST6CDT] PHP Catchable fatal error:  Object of class PDOStatement could not be converted to string in /home/structur/public_html/projects/dbfun/dbfun.php on line 13
+[16-Sep-2015 20:16:27 CST6CDT] PHP Parse error:  syntax error, unexpected '}', expecting ',' or ';' in /home/structur/public_html/projects/dbfun/dbfun.php on line 14
+[16-Sep-2015 20:16:43 CST6CDT] PHP Parse error:  syntax error, unexpected '}', expecting ',' or ';' in /home/structur/public_html/projects/dbfun/dbfun.php on line 14
+[16-Sep-2015 20:16:45 CST6CDT] PHP Parse error:  syntax error, unexpected '}', expecting ',' or ';' in /home/structur/public_html/projects/dbfun/dbfun.php on line 14
+[16-Sep-2015 20:25:11 CST6CDT] PHP Parse error:  syntax error, unexpected '$task' (T_VARIABLE), expecting ',' or ';' in /home/structur/public_html/projects/dbfun/dbfun.php on line 16
+[16-Sep-2015 20:25:42 CST6CDT] PHP Parse error:  syntax error, unexpected '}', expecting ',' or ';' in /home/structur/public_html/projects/dbfun/dbfun.php on line 18
+[16-Sep-2015 20:31:49 CST6CDT] PHP Parse error:  syntax error, unexpected 'go' (T_STRING) in /home/structur/public_html/projects/dbfun/dbfun.php on line 11
+[16-Sep-2015 20:32:22 CST6CDT] PHP Parse error:  syntax error, unexpected 'go' (T_STRING) in /home/structur/public_html/projects/dbfun/dbfun.php on line 11
+[16-Sep-2015 20:32:23 CST6CDT] PHP Parse error:  syntax error, unexpected 'go' (T_STRING) in /home/structur/public_html/projects/dbfun/dbfun.php on line 11
+[16-Sep-2015 20:33:38 CST6CDT] PHP Parse error:  syntax error, unexpected 'go' (T_STRING) in /home/structur/public_html/projects/dbfun/dbfun.php on line 11

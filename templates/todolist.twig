@@ -1,0 +1,30 @@
+{% extends 'main.twig' %}
+
+{% block stylesheet %}<link rel="stylesheet" href="css/toDoListStyle.css">{% endblock stylesheet %}
+
+{% block content %}
+<div class="container">
+
+            
+           <p><!-- This is the ADD ITEM part of the program-->
+                <label for="new-task">Add Item</label>
+                <input id="new-task" type="text">
+                <button>Add</button>
+            </p>
+
+            <h3>Todo ~ <span id="todoHTML"></span></h3><!--This is the part where the added/unticked todo items go -->
+            <ul id="incomplete-tasks">
+                
+            </ul>
+
+            <h3>Completed ~ <span id="completedHTML"></span></h3><!-- This is where the ticked items go-->
+            <ul id="completed-tasks">
+                
+            </ul>
+            
+        </div>
+
+    <script type="text/javascript" src="js/toDoList.js"></script>
+{% endblock content %}
+
+

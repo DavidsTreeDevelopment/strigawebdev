@@ -1,0 +1,23 @@
+{% extends 'main.twig' %}
+
+{% block content %}
+    <strong>Contact</strong>
+    <h2>David</h2>
+
+    <p>I cannot be contacted at the moment, but, if you wish, feel free to contact me with the form below.</p>
+    <address>
+      <h4>No Contact House</h4>
+      <p>No Contact Street<br>
+      No Contact City, State Zip<br>
+    <a href="https://www.google.com/maps/place/Sleepy+Hollow+Cemetery/@42.464126,-71.343098,15z/data=!4m2!3m1!1s0x0:0x9c41d0f83df689a6?sa=X&ei=ZCgLVZb5Io_hoASc7oHwCQ&ved=0CH0Q_BIwCw">Google Map</a></p>
+    </address>
+
+    <form action="" method="post">
+      <fieldset>
+        <input name="name" type="text" placeholder="Full Name">
+        <input name="email" type="email" placeholder="Email Address">
+        <textarea name="msg" placeholder="Your message..."></textarea>
+      </fieldset>
+      <input type="submit" class="button">
+    </form>
+{% endblock content %}
