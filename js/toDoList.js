@@ -395,3 +395,7 @@ function ajax_get(){
 
 //start everything
 ajax_get();
+
+//Next, I want to make my code more object oriented.
+//To do that, I will need to rearrange all of my code.
+//I will put everything into a single object literal.
