@@ -31,6 +31,10 @@ $app->get('/todolist', function() use($app){
     $app->render('todolist.twig');
 })->name('todolist');
 
+$app->get('/comments', function() use($app){
+    $app->render('comments.twig');
+})->name('comments');
+
 $app->post('/contact', function() use($app){
     $name = $app->request->post('name');
     $email = $app->request->post('email');

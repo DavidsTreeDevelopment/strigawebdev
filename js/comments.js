@@ -10,7 +10,8 @@
     cacheDom: function(){
       this.$el = $("#toDoListModule");
       this.$addButton = this.$el.find('button');
-      this.$taskInput = this.$el.find('#new-task');
+      console.log(this.$addButton)
+      this.$taskInput = this.$el.find('#comment');
       this.$incompleteTasksHolder = this.$el.find('#incomplete-tasks');
       this.$completedTasksHolder = this.$el.find('#completed-tasks');
       this.$todoHTML = this.$el.find("#todoHTML");
@@ -292,7 +293,10 @@
         this.bindTaskEvents(this.$completedTasksHolder.children(i)[0], this.taskIncomplete);
       }
       // Set the click handler to the addTask function
-      this.$addButton.click(this.addTask);
+      this.$addButton.click(function(e){
+        e.preventDefault();
+        outerscope.addTask();
+      });
       //allow user to hit enter instead of clicking addTask.
       this.$taskInput.bind("enterKey",function(e){
              outerscope.addTask();
