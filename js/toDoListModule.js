@@ -5,6 +5,7 @@
     tasksIncompleteNumber: 0,
     init: function(){
       this.cacheDom();
+      
       this.render();
     },
     cacheDom: function(){
@@ -20,7 +21,6 @@
       this.ajax_get();
     },
     addTask: function(){
-      console.log("addTask");
       //Create  a new list item with the text from the #new-task
       var listItem = this.createNewTaskElement(this.$taskInput.val());
       //create an object with the information to send to the database
@@ -32,17 +32,17 @@
       this.ajax_post(temptasks);
       //Apend the listItem to the $incompleteTasksHolder div and bind the right event to run if its tick box is ticked
       this.$incompleteTasksHolder.append(listItem);
-      this.bindTaskEvents(listItem, this.taskCompleted);
+      this.bindTaskEvents(listItem, "incomplete");
       //remove the user's input from the $taskInput box
       this.$taskInput.val("");
       //Add 1 to # incomplete and display on screen
       this.tasksIncompleteNumber += 1;
       this.tellUser();
     },
-    deleteTask: function(delbutscope){
-      console.log("deleteTask");
+    deleteTask: function(delbtnscope){
+      //this.isRunning("deleteTask");
       //Get the appropriate elements
-      var listItem = delbutscope.parentNode;
+      var listItem = delbtnscope.parentNode;
       var ul = listItem.parentNode;
       var label = listItem.querySelector("label");
       //loop through tasks, and if text matches current text, update the database with ajax_post, and delete the item from tasks with task.splice
@@ -63,111 +63,134 @@
         this.tellUser();
         // else if the id is completed-tasks, one is subtracted from completeTasksNumber
       } else {
-          tasksCompleteNumber -= 1;
-          tellUser();
+          this.tasksCompleteNumber -= 1;
+          this.tellUser();
       }
     },
-    editTask: function(scope, editbuttonscope){
-      console.log("editTask");
+    editTask: function(taskListItem, editbuttonscope){
+      console.log(editbuttonscope);
+      console.log(taskListItem);
+      //this.isRunning("editTask");
       //Get the appropriate elements (OldValue will be used later and is necessary)
       var onlyListItem = editbuttonscope.parentNode;
       var editedInput = onlyListItem.querySelector("input[type=text]");
       var editedLabel = onlyListItem.querySelector("label");
       var oldValue = editedLabel.innerText;
-      //Change the class of the label of the listItem to editMode, allowing it to be edited, and use the user's input as its placeholder. When the user hits enter, update the value and run finishEdit.
-      onlyListItem.className = 'editMode';
-      editedInput.value = editedLabel.innerText;
-      editedInput.addEventListener('keypress', function (e) {
-        var keys = e.which || e.keyCode;
-        if (keys === 13) {
-          editedLabel.innerText = editedInput.value;
-          scope.finishEdit(onlyListItem, oldValue, scope);
-        }
-      });
-    },
-    finishEdit: function(lastThis, oldValue, newscope){
-      console.log("finishEdit");
-      //Get the appropriate elements
-      var onlyListItem = lastThis;
-      var editedLabel = onlyListItem.querySelector("label");
-      //Using the oldValue of the task, find the right task, update its value, and update the database with ajax_post
-      for (var key in tasks) {
-        if (tasks[key]['task_text'] == oldValue) {
-          tasks[key]['task_text'] = editedLabel.innerText;
-          tasks[key]['task_action']='update';
-          newscope.ajax_post(tasks[key]);
-          break;
-        }
+      //Change the class of the label of the listItem to editMode, turning it into an input instead of label via css, and use the user's input as its placeholder. When the user hits enter, update the value and run finishEdit.
+      if(editedInput.value == ''){
+        onlyListItem.className = 'editMode';
+        editedInput.value = editedLabel.innerText;
+        console.log("did it");
+      } else {
+        editedLabel.innerText = editedInput.value;
+          for (var key in tasks) {
+            if (tasks[key]['task_text'] == oldValue) {
+              tasks[key]['task_text'] = editedLabel.innerText;
+              tasks[key]['task_action']='update';
+              scope.ajax_post(tasks[key]);
+              break;
+            }
+          }
+        onlyListItem.className = '';
+        editedInput.value = '';
       }
-      onlyListItem.className = '';
     },
-    taskCompleted: function(scope, checkboxscope){
-      console.log("taskCompleted");
+    changeTaskStatus: function(taskStatus, checkboxscope){
       var listItem = checkboxscope.parentNode;
-      //Append the listItem to the completedTasksHolder div.
-      scope.$completedTasksHolder.append(listItem);
-      //Bind the right event to do if the tick box is ticked, again.
-      scope.bindTaskEvents(listItem, scope.taskIncomplete);
-      //Update the tasks# and display it for the user
-      scope.tasksIncompleteNumber -= 1;
-      scope.tasksCompleteNumber += 1;
-      scope.tellUser();
-      //Get the label in the listItem. With the for statement, compare each task's task_text to the label's task_text. Once found, update the task_status, task_action, and send the item to PHP to update the database. 
       var label = listItem.querySelector("label");
-      for (var key in tasks) {
-        if (tasks[key]['task_text'] === label.innerText) {
-          tasks[key]['task_status'] = 'complete';
-          tasks[key]['task_action'] = 'make_complete';
-          scope.ajax_post(tasks[key]);
-          tasks[key]['action'] = '';
-          break;
+      if (taskStatus == "complete") {
+        this.$completedTasksHolder.append(listItem);
+        this.bindTaskEvents(listItem, "incomplete");
+        this.tasksIncompleteNumber -= 1;
+        this.tasksCompleteNumber += 1;
+        this.tellUser();
+        for (var key in tasks) {
+          if (tasks[key]['task_text'] === label.innerText) {
+            tasks[key]['task_status'] = 'complete';
+            tasks[key]['task_action'] = 'make_complete';
+            this.ajax_post(tasks[key]);
+            tasks[key]['action'] = '';
+            break;
+          }
         }
-      }
-    },
-    taskIncomplete: function(scope, checkboxscope){
-      console.log("taskIncomplete");
-      //Get the listItem, append it to the incompleteTaskHolder div, and change the event to be run the next time it is ticked.
-      var listItem = checkboxscope.parentNode;
-      scope.$incompleteTasksHolder.append(listItem);
-      scope.bindTaskEvents(listItem, scope.taskCompleted);
-      //Update the tasks# and display it for the user
-      scope.tasksIncompleteNumber += 1;
-      scope.tasksCompleteNumber -= 1;
-      scope.tellUser();
-      //Get the label in the listItem, and with the for statement, compare each task's task_text to the label's task_text. Once found, update the task_status, task_action, and send the item to PHP to update the database. 
-      var label = listItem.querySelector("label");
-      for (var key in tasks) {
-        if (tasks[key]['task_text'] === label.innerText) {
-          tasks[key]['task_status'] = "incomplete";
-          tasks[key]['task_action'] = 'make_incomplete';
-          scope.ajax_post(tasks[key]);
-          tasks[key]['action'] = '';
-          break;
+      } else {
+          this.$incompleteTasksHolder.append(listItem);
+          this.bindTaskEvents(listItem, "complete");
+          this.tasksIncompleteNumber += 1;
+          this.tasksCompleteNumber -= 1;
+          this.tellUser();
+          for (var key in tasks) {
+            if (tasks[key]['task_text'] === label.innerText) {
+              tasks[key]['task_status'] = 'incomplete';
+              tasks[key]['task_action'] = 'make_incomplete';
+              this.ajax_post(tasks[key]);
+              tasks[key]['action'] = '';
+              break;
+            }
+          }
         }
-      }
     },
-    bindTaskEvents: function(taskListItem, checkBoxEventHandler){
-      console.log("bindTaskEvents");
-      var btescope = this;
-      //select taskListItem's children
-      var checkBox = taskListItem.querySelector("[type=checkbox]");
-      var editButton = taskListItem.querySelector("button.edit");
-      var deleteButton =  taskListItem.querySelector("button.delete");
-      //Onclick, make the editButton run editTask.
-      editButton.onclick = function(){
-        btescope.editTask(btescope, editButton);
+    bindEvents: function(){
+      var self = this;
+      for(var i = 0; i < this.$incompleteTasksHolder.children.length; i++) {
+        var taskListItem = this.$incompleteTasksHolder.find("li")[i];
+        var editedInput = taskListItem.querySelector("input[type=text]");
+        var checkBox = taskListItem.querySelector("[type=checkbox]");
+        var editButton = taskListItem.querySelector("button.edit");
+        var deleteButton =  taskListItem.querySelector("button.delete");
+        //Onclick, make the editButton run editTask.
+        editButton.onclick = function(){
+          self.editTask(taskListItem, editButton);
+        }
+        //WARNING: the deleteButton needs to be inside of a function.http://stackoverflow.com/questions/14425397/onclick-function-runs-automatically
+        deleteButton.onclick = function(){
+          this.deleteTask(deleteButton);
+        }
+        //When tick box changes, run changeTaskStatus.
+        checkBox.onchange = function(){
+          self.changeTaskStatus("complete", checkBox);
+          console.log("i changed")
+        }
+        editedInput.addEventListener('keypress', function (e) {
+          var keys = e.which || e.keyCode;
+          if (keys === 13) {
+            btescope.editTask(self, editButton);
+          }
+        });
       }
-      //WARNING: the deleteButton needs to be inside of a function.http://stackoverflow.com/questions/14425397/onclick-function-runs-automatically
-      deleteButton.onclick = function(){
-        btescope.deleteTask(deleteButton);
-      }
-      //When tick box changes, run taskComplete(checkBoxEventHandler) or taskIncomplete.
-      checkBox.onchange = function(){
-        checkBoxEventHandler(btescope, checkBox);
-      }
+      
+    },
+    bindTaskEvents: function(taskListItem, taskStatus){
+      //this.isRunning("bindTaskEvents");
+
+      // var btescope = this;
+      // //select taskListItem's children
+      // var editedInput = taskListItem.querySelector("input[type=text]");
+      // var checkBox = taskListItem.querySelector("[type=checkbox]");
+      // var editButton = taskListItem.querySelector("button.edit");
+      // var deleteButton =  taskListItem.querySelector("button.delete");
+      // //Onclick, make the editButton run editTask.
+      // editButton.onclick = function(){
+      //   btescope.editTask(btescope, editButton);
+      // }
+      // //WARNING: the deleteButton needs to be inside of a function.http://stackoverflow.com/questions/14425397/onclick-function-runs-automatically
+      // deleteButton.onclick = function(){
+      //   btescope.deleteTask(deleteButton);
+      // }
+      // //When tick box changes, run changeTaskStatus.
+      // checkBox.onchange = function(){
+      //   btescope.changeTaskStatus(taskStatus, checkBox);
+      //   console.log("i changed")
+      // }
+      // editedInput.addEventListener('keypress', function (e) {
+      //   var keys = e.which || e.keyCode;
+      //   if (keys === 13) {
+      //     btescope.editTask(btescope, editButton);
+      //   }
+      // });
     },
     createNewTaskElement: function(taskString){
-      console.log("createNewTaskElement")
+     // this.isRunning("createNewTaskElement");
       //Create the new element containers for the tasks
       var listItem = document.createElement("li");
       var checkBox = document.createElement("input");
@@ -177,6 +200,7 @@
       var deleteButton = document.createElement("button");
       //Modify each element accordingly
       checkBox.type = "checkbox";
+      checkBox.className = "checkboxes";
       editInput.type = "text";
       editButton.innerText = "Edit"; //Might have to use innerHTML
       editButton.className = "edit";
@@ -194,7 +218,8 @@
       return listItem;
     },
     ajax_post: function(inputText){
-      console.log("ajax_post");
+      console.log("ajax_post")
+      //this.isRunning("ajax_post");
       var outerscope = this;
       // Create our XMLHttpRequest object
       var hr = new XMLHttpRequest();
@@ -229,9 +254,9 @@
       hr.send(taskData); // Actually execute the request
     },
     ajax_get: function(){
-      console.log("ajax_get")
+      //this.isRunning("ajax_get")
       //outerscope makes the IsJsonString method visible to if statements
-      var outerscope = this;
+      var self = this;
       // Create our XMLHttpRequest object
       var hr = new XMLHttpRequest();
       // Create some variables we need to send to our PHP file
@@ -246,31 +271,33 @@
         if(hr.readyState == 4 && hr.status == 200) {
           var return_data = hr.responseText;
           //check to see if it is valid JSON and run JSON.parse if it is
-          var truetext = outerscope.IsJsonString(return_data);
+          var truetext = self.IsJsonString(return_data);
           if (truetext) {
             tasks = JSON.parse(return_data); 
             } else {
               console.log("This is not valid JSON. Here is the return_data"+"\n"+return_data);
             };
             //Run populateData and udpate the page with the data retrieved from PHP.
-            outerscope.populateData(tasks);
+            self.populateData(tasks);
+            this.$checkBoxes = $(".checkboxes");
+            self.bindEvents();
         }
       }
       // Send the taskData to PHP now... and wait for response
       hr.send(taskData); // Actually execute the request
     },
     populateData: function(newdata){
-      console.log("populateData")
-      var outerscope = this; 
+      //this.isRunning("populateData")
+      var self = this; 
       //Create a listItem for each task (object) in newdata, check to see if it is complete or incomplete and bind it to the appropriate element.
       for (var key in newdata) {
         var listItem = this.createNewTaskElement(newdata[key]['task_text'])
         if (newdata[key]['task_status'] == "incomplete") {
           this.$incompleteTasksHolder.append(listItem);
-          this.bindTaskEvents(listItem, this.taskCompleted);
+          this.bindTaskEvents(listItem, "complete");
         } else {
-          outerscope.$completedTasksHolder.append(listItem);
-          outerscope.bindTaskEvents(listItem, outerscope.taskIncomplete);
+          self.$completedTasksHolder.append(listItem);
+          self.bindTaskEvents(listItem, "incomplete");
           var checkedBoxes = listItem.querySelector("input[type=checkbox]");
           checkedBoxes.checked = true;
         }
@@ -280,33 +307,25 @@
         if (newdata[key]['task_status'] == "incomplete") {
           this.tasksIncompleteNumber += 1;
         } else {
-          outerscope.tasksCompleteNumber += 1;
+          self.tasksCompleteNumber += 1;
         }
       }
-      //for each child of the incompleteTasksHolder element, run bindTaskEvents.
-      for(var i = 0; i < this.$incompleteTasksHolder.children().length; i++) {
-        this.bindTaskEvents(this.$incompleteTasksHolder.children(i)[0], this.taskCompleted);
-      }
-      //Do the same for completedTasksHolder
-      for(var i = 0; i < this.$completedTasksHolder.children().length; i++) {
-        this.bindTaskEvents(this.$completedTasksHolder.children(i)[0], this.taskIncomplete);
-      }
       // Set the click handler to the addTask function
-      this.$addButton.click(this.addTask);
-      //allow user to hit enter instead of clicking addTask.
-      this.$taskInput.bind("enterKey",function(e){
-             outerscope.addTask();
-          });
-      this.$taskInput.keyup(function(e){
-          if(e.keyCode == 13)
-          {
-              $(this).trigger("enterKey");
-          }
+      this.$addButton.click(function() {
+        self.addTask();
       });
+      //allow user to hit enter instead of clicking addTask.
+      this.$taskInput[0].addEventListener('keypress', function (e) {
+        var keys = e.which || e.keyCode;
+        if (keys === 13) {
+          self.addTask();
+        }
+      });
+      console.log(this.$incompleteTasksHolder.find("li")[0].querySelector("input[type=text]"));
       this.tellUser();
     },
     tellUser: function(){
-      console.log("tellUser");
+      //this.isRunning("tellUser");
       this.$todoHTML.html(this.tasksIncompleteNumber);
       this.$completedHTML.html(this.tasksCompleteNumber);
     },
@@ -318,14 +337,15 @@
           }
         return true;
     },
+    isRunning: function(fnName){
+      console.log("hello");
+    }
   }
+
   toDoList.init();  
 })();
 
-
-
-
-
-
-
-
+//For bindTaskEvents, I want to run it once when
+//everything has been loaded instead of running it
+//each time a new list item is created. Doing so will
+//get everything on the page faster.

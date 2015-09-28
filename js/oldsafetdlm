@@ -5,25 +5,28 @@
     tasksIncompleteNumber: 0,
     init: function(){
       this.cacheDom();
-      this.bindEvents();
+      // this.bindEvents();
       this.render();
     },
     cacheDom: function(){
       this.$el = $("#toDoListModule");
       this.$addButton = this.$el.find('button');
-      this.$taskInput = this.$el.find('#comment');
+      this.$taskInput = this.$el.find('#new-task');
       this.$incompleteTasksHolder = this.$el.find('#incomplete-tasks');
       this.$completedTasksHolder = this.$el.find('#completed-tasks');
       this.$todoHTML = this.$el.find("#todoHTML");
       this.$completedHTML = this.$el.find("#completedHTML");
-
+      this.$checkBoxes = this.$el.$( ":checkbox" )
+      console.log(this.$checkBoxes)
     },
     render: function(){
       this.ajax_get();
     },
-    bindEvents: function(){
-      
-    },
+    // bindEvents: function(){
+    //   checkBox.onchange = function(){
+    //     changeTaskStatus();
+    //   }
+    // },
     addTask: function(){
       console.log("addTask");
       //Create  a new list item with the text from the #new-task
@@ -76,7 +79,7 @@
       console.log("editTask");
       //Get the appropriate elements (OldValue will be used later and is necessary)
       var onlyListItem = editbuttonscope.parentNode;
-      var editedInput = onlyListItem.querySelector("textarea");
+      var editedInput = onlyListItem.querySelector("input[type=text]");
       var editedLabel = onlyListItem.querySelector("label");
       var oldValue = editedLabel.innerText;
       //Change the class of the label of the listItem to editMode, allowing it to be edited, and use the user's input as its placeholder. When the user hits enter, update the value and run finishEdit.
@@ -86,25 +89,22 @@
         var keys = e.which || e.keyCode;
         if (keys === 13) {
           editedLabel.innerText = editedInput.value;
-          scope.finishEdit(onlyListItem, oldValue, scope);
+          for (var key in tasks) {
+            if (tasks[key]['task_text'] == oldValue) {
+              tasks[key]['task_text'] = editedLabel.innerText;
+              tasks[key]['task_action']='update';
+              scope.ajax_post(tasks[key]);
+              break;
+            }
+          }
+          onlyListItem.className = '';
+         // scope.finishEdit(onlyListItem, oldValue, scope);
         }
       });
     },
-    finishEdit: function(lastThis, oldValue, newscope){
-      console.log("finishEdit");
-      //Get the appropriate elements
-      var onlyListItem = lastThis;
-      var editedLabel = onlyListItem.querySelector("label");
-      //Using the oldValue of the task, find the right task, update its value, and update the database with ajax_post
-      for (var key in tasks) {
-        if (tasks[key]['task_text'] == oldValue) {
-          tasks[key]['task_text'] = editedLabel.innerText;
-          tasks[key]['task_action']='update';
-          newscope.ajax_post(tasks[key]);
-          break;
-        }
-      }
-      onlyListItem.className = '';
+    changeTaskStatus: function(){
+      var listItem = this.parentNode;
+      console.log(listItem);
     },
     taskCompleted: function(scope, checkboxscope){
       console.log("taskCompleted");
@@ -166,22 +166,22 @@
       deleteButton.onclick = function(){
         btescope.deleteTask(deleteButton);
       }
+      //When tick box changes, run taskComplete(checkBoxEventHandler) or taskIncomplete.
+      checkBox.onchange = function(){
+        checkBoxEventHandler(btescope, checkBox);
+      }
     },
-
-    // <li>
-    //     <div class="commentText">
-    //         <p class="">Hello this is a test comment.</p> <span class="date sub-text">on March 5th, 2014</span>
-    //     </div>
-    // </li>
     createNewTaskElement: function(taskString){
       console.log("createNewTaskElement")
       //Create the new element containers for the tasks
       var listItem = document.createElement("li");
+      var checkBox = document.createElement("input");
       var label = document.createElement("label");
-      var editInput = document.createElement("textarea");
+      var editInput = document.createElement("input");
       var editButton = document.createElement("button");
       var deleteButton = document.createElement("button");
       //Modify each element accordingly
+      checkBox.type = "checkbox";
       editInput.type = "text";
       editButton.innerText = "Edit"; //Might have to use innerHTML
       editButton.className = "edit";
@@ -190,6 +190,7 @@
       //Use the text that the user entered as the label's innerText.
       label.innerText = taskString;
       //Append the various elements to the listItem.
+      listItem.appendChild(checkBox);
       listItem.appendChild(label);
       listItem.appendChild(editInput);
       listItem.appendChild(editButton);
@@ -275,10 +276,8 @@
         } else {
           outerscope.$completedTasksHolder.append(listItem);
           outerscope.bindTaskEvents(listItem, outerscope.taskIncomplete);
-          //console.log(listItem)
           var checkedBoxes = listItem.querySelector("input[type=checkbox]");
-          //console.log(checkedBoxes)
-          //checkedBoxes.checked = true;
+          checkedBoxes.checked = true;
         }
       }
       //for each task in newdata, check its task_status, and add the appropriate # to the task counters
@@ -298,10 +297,7 @@
         this.bindTaskEvents(this.$completedTasksHolder.children(i)[0], this.taskIncomplete);
       }
       // Set the click handler to the addTask function
-      this.$addButton.click(function(e){
-        e.preventDefault();
-        outerscope.addTask();
-      });
+      this.$addButton.click(this.addTask);
       //allow user to hit enter instead of clicking addTask.
       this.$taskInput.bind("enterKey",function(e){
              outerscope.addTask();
@@ -313,7 +309,6 @@
           }
       });
       this.tellUser();
-      // this.textResizer();
     },
     tellUser: function(){
       console.log("tellUser");
@@ -328,66 +323,22 @@
           }
         return true;
     },
-    
-    // autoSize: function(outscope){
-    //   this.$textareaSize.innerHTML = outscope.$inputval.value + '\n';
-    // },
-    // textResizer: function(){
-    //   var outerscope = this;
-    //   this.autoSize(outerscope);
-    //   this.$inputval.addEventListener('input', function(){
-    //     outerscope.autoSize(outerscope);
-    //   });
-    // },
-    
   }
-  toDoList.init(); 
-  var inputResizer = {
-      cacheDom: function(){
-        this.$textContainer = document.querySelector('.textarea-container'),
-        this.$textareaSize = this.$textContainer.querySelector('.textarea-size'),
-        this.$inputval = this.$textContainer.querySelector('textarea')
-      },
-      init: function(){
-        this.cacheDom();
-        this.textResizer();
-      },
-      autoSize: function(){
-        this.$textareaSize.innerHTML = this.$inputval.value + '\n';
-        console.log(this);
-      },
-      textResizer: function(){
-        var outerscope = this;
-        this.autoSize();
-        this.$inputval.addEventListener('input', function(){
-        outerscope.autoSize();
-      })
-    }
-  }
-  inputResizer.init();
-
+  toDoList.init();  
 })();
 
 
 
-// var textContainer, textareaSize, input;
-// var autoSize = function () {
-//   console.log("running autoSize")
-//   textareaSize.innerHTML = input.value + '\n';
-// };
 
-// (function() {
-//   console.log("running")
-//   textContainer = document.querySelector('.textarea-container');
-//   textareaSize = textContainer.querySelector('.textarea-size');
-//   input = textContainer.querySelector('textarea');
-  
-//   autoSize();
-//   input.addEventListener('input', autoSize);
-
-// })();
-  
-
+//When the checkbox is ticked, the program will need to know
+//which checkbox was ticked. When it is clicked, changeTaskStatus
+//will run. I believe changeTaskStatus's scope will change 
+//depending which checkbox was ticked. With that scope, I can
+//get the parent of the checkbox. Only changeTaskStatus will be run
+//instead of either of the functions. That will be the bound event.
+//I can get the variables I need that will change
+//depending on the scope of the checkbox that was ticked. Those will
+//replace the need for 
 
 
 
