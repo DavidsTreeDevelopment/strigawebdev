@@ -39,12 +39,11 @@
       this.tasksIncompleteNumber += 1;
       this.tellUser();
     },
-    deleteTask: function(delbtnscope){
+    deleteTask: function(taskListItem){
       //this.isRunning("deleteTask");
       //Get the appropriate elements
-      var listItem = delbtnscope.parentNode;
-      var ul = listItem.parentNode;
-      var label = listItem.querySelector("label");
+      var ul = taskListItem.parentNode;
+      var label = taskListItem.querySelector("label");
       //loop through tasks, and if text matches current text, update the database with ajax_post, and delete the item from tasks with task.splice
       for (var i=0; i <= tasks.length; i++) {
         if (tasks[i]['task_text'] === label.innerText) {
@@ -56,7 +55,7 @@
         };
       }
       //Remove the parent list item from the ul
-      ul.removeChild(listItem);
+      ul.removeChild(taskListItem);
       //if the id of the task is incomplete, one is subtracted from tasksIncompleteNumber
       if (ul.id == "incomplete-tasks") {
         this.tasksIncompleteNumber -= 1;
@@ -67,40 +66,40 @@
           this.tellUser();
       }
     },
-    editTask: function(taskListItem, editbuttonscope){
-      console.log(editbuttonscope);
-      console.log(taskListItem);
+    editTask: function(taskListItem){
+      console.log(this);
       //this.isRunning("editTask");
       //Get the appropriate elements (OldValue will be used later and is necessary)
-      var onlyListItem = editbuttonscope.parentNode;
-      var editedInput = onlyListItem.querySelector("input[type=text]");
-      var editedLabel = onlyListItem.querySelector("label");
+      var editedInput = taskListItem.querySelector("input[type=text]");
+      var editedLabel = taskListItem.querySelector("label");
       var oldValue = editedLabel.innerText;
       //Change the class of the label of the listItem to editMode, turning it into an input instead of label via css, and use the user's input as its placeholder. When the user hits enter, update the value and run finishEdit.
       if(editedInput.value == ''){
-        onlyListItem.className = 'editMode';
+        taskListItem.className = 'editMode';
         editedInput.value = editedLabel.innerText;
-        console.log("did it");
       } else {
         editedLabel.innerText = editedInput.value;
           for (var key in tasks) {
             if (tasks[key]['task_text'] == oldValue) {
               tasks[key]['task_text'] = editedLabel.innerText;
               tasks[key]['task_action']='update';
-              scope.ajax_post(tasks[key]);
+              this.ajax_post(tasks[key]);
               break;
             }
           }
-        onlyListItem.className = '';
+        taskListItem.className = '';
         editedInput.value = '';
       }
     },
-    changeTaskStatus: function(taskStatus, checkboxscope){
+    changeTaskStatus: function(taskListItem){
       var listItem = checkboxscope.parentNode;
       var label = listItem.querySelector("label");
-      if (taskStatus == "complete") {
-        this.$completedTasksHolder.append(listItem);
-        this.bindTaskEvents(listItem, "incomplete");
+      taskStatustwo = taskListItem.parentNode.id;
+
+      if (taskStatustwo == "incomplete-tasks") {
+        console.log("this is true")
+        this.$completedTasksHolder.append(taskListItem);
+        //this.bindTaskEvents(listItem, "incomplete");
         this.tasksIncompleteNumber -= 1;
         this.tasksCompleteNumber += 1;
         this.tellUser();
@@ -114,8 +113,8 @@
           }
         }
       } else {
-          this.$incompleteTasksHolder.append(listItem);
-          this.bindTaskEvents(listItem, "complete");
+          this.$incompleteTasksHolder.append(taskListItem);
+          //this.bindTaskEvents(listItem, "complete");
           this.tasksIncompleteNumber += 1;
           this.tasksCompleteNumber -= 1;
           this.tellUser();
@@ -132,29 +131,32 @@
     },
     bindEvents: function(){
       var self = this;
-      for(var i = 0; i < this.$incompleteTasksHolder.children.length; i++) {
-        var taskListItem = this.$incompleteTasksHolder.find("li")[i];
-        var editedInput = taskListItem.querySelector("input[type=text]");
-        var checkBox = taskListItem.querySelector("[type=checkbox]");
-        var editButton = taskListItem.querySelector("button.edit");
-        var deleteButton =  taskListItem.querySelector("button.delete");
+      var taskListItem = [];
+      for(var i = 0; i < this.$incompleteTasksHolder.find("li").length; i++) {
+        taskListItem[i] = this.$incompleteTasksHolder.find("li")[i];
+        console.log(taskListItem)
+        var editedInput = taskListItem[i].querySelector("input[type=text]");
+        var checkBox = taskListItem[i].querySelector("[type=checkbox]");
+        var editButton = taskListItem[i].querySelector("button.edit");
+        var deleteButton =  taskListItem[i].querySelector("button.delete");
         //Onclick, make the editButton run editTask.
         editButton.onclick = function(){
-          self.editTask(taskListItem, editButton);
+          console.log(taskListItem[i])
+          self.editTask(taskListItem[i]);
         }
         //WARNING: the deleteButton needs to be inside of a function.http://stackoverflow.com/questions/14425397/onclick-function-runs-automatically
         deleteButton.onclick = function(){
-          this.deleteTask(deleteButton);
+          self.deleteTask(taskListItem);
         }
         //When tick box changes, run changeTaskStatus.
         checkBox.onchange = function(){
-          self.changeTaskStatus("complete", checkBox);
+          self.changeTaskStatus(taskListItem);
           console.log("i changed")
         }
         editedInput.addEventListener('keypress', function (e) {
           var keys = e.which || e.keyCode;
           if (keys === 13) {
-            btescope.editTask(self, editButton);
+            self.editTask(taskListItem);
           }
         });
       }
